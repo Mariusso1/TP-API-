@@ -11,7 +11,7 @@
 
 
     <script>
-        var formulaire, boutonAjouter, tableCategories, message, template;
+        var formulaire, boutonAjouter, tableCategories, message, template ;
         // Exécuté à la fin du chargement de la page
         window.onload = function () {
             formulaire = document.getElementById("formulaire");
@@ -91,15 +91,36 @@
                 })
                 .catch(afficheMessage);
         }
+        function supprimeCategorie(link) {
+            fetch(link,
+                {
+                    method: 'delete',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    switch (response.status) {
+                        case 200:
+                            chargeCategories();
+                            break;
+                        case 409:
+                            afficheMessage("Impossible de supprimer cette catégorie car elle est réferencée par des produit");
+                            break;
+                    }
+                })
+                .catch(afficheMessage);
+        }
     </script>
 </head>
 
 <body>
     <!-- Le formulaire de saisie -->
     <form id="formulaire">
-        <label for="libelle">Libellé</label>
+        <label for="libelle" id="libelle">Libellé</label>
         <input name="libelle" placeholder="Libellé de la catégorie"><br>
-        <label for="description">Description</label>
+        <label for="description" id="description">Description</label>
         <textarea name="description" placeholder="Description de la catégorie"></textarea><br>
         <button type="button" id="boutonAjouter">Ajouter</button>
     </form>
@@ -116,11 +137,11 @@
         <h2>Liste des catégories ({{_embedded.categories.length}} / {{page.totalElements}})</h2>
         <TABLE>
         {{! Un commentaire Mustache }}
-        <TR><TH>Code</TH><TH>Libelle</TH><TH>Description</TH></TR>
+        <TR><TH>Code</TH><TH>Libelle</TH><TH>Description</TH><TH>Action</TH></TR>
         {{! Pour chaque categorie dans le tableau 'categories' }}
         {{#_embedded.categories}}
         {{! Une ligne dans la table }}
-        <TR><TD>{{code}}</TD><TD>{{libelle}}</TD><TD>{{description}}</TD></TR>
+        <TR><TD>{{code}}</TD><TD>{{libelle}}</TD><TD>{{description}}</TD><TD><button type="button" onclick="supprimeCategorie('{{_links.self.href}}')">Supprimer</button></TD></TR>
         {{/_embedded.categories}}
         </TABLE>
     </script>
